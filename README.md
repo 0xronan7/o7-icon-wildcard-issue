@@ -1,6 +1,6 @@
 # @o7/icon Wildcard Export Resolution Bug
 
-**Affects:** Both Vite 7 (Rollup) AND Vite 8 (rolldown)
+**Affects:** Both Vite 7 (Rollup) AND Vite 8 (rolldown) - **production stable**
 
 ## Reproduction
 
