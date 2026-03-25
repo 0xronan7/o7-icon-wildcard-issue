@@ -10,9 +10,10 @@ This repo demonstrates a bug where neither Rollup nor rolldown can resolve wildc
 
 ### Vite 7 (Rollup)
 ```
-[commonjs--resolver] No known conditions for "./lucide/check.svelte" specifier 
-in "@o7/icon" package
+✘ [ERROR] No known conditions for "./lucide/check.svelte" specifier in "@o7/icon" package
 ```
+- ❌ Dev mode: fails
+- ❌ Build: fails
 
 ### Vite 8 (rolldown)
 ```
@@ -23,6 +24,8 @@ Error: Could not resolve '@o7/icon/lucide/check' in src/App.svelte
    │                       ───────────┬───────────  
    │                                  ╰───────────── Package subpath is not defined by exports
 ```
+- ❌ Dev mode: fails
+- ❌ Build: fails
 
 ## Root Cause
 
@@ -43,9 +46,11 @@ The `@o7/icon` package uses wildcard exports in its `package.json`:
 }
 ```
 
-This pattern **fails in both bundlers**:
-- ❌ Vite 7 (Rollup) - build fails
-- ❌ Vite 8 (rolldown) - build fails
+This pattern **fails in both bundlers, in both dev and build modes**:
+- ❌ Vite 7 (Rollup) - dev & build fail
+- ❌ Vite 8 (rolldown) - dev & build fail
+
+The `@o7/icon` Vite plugin (`o7Icon()`) attempts to rewrite imports at build time, but it doesn't fix the underlying exports resolution issue.
 
 ## Expected Behavior
 
