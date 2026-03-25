@@ -1,11 +1,20 @@
 # Rolldown Wildcard Export Resolution Bug
 
+**UPDATE:** This bug affects **both Vite 7 (Rollup) AND Vite 8 (rolldown)**.
+
 ## Reproduction
 
-This repo demonstrates a bug where rolldown (Vite 8's bundler) cannot resolve wildcard exports patterns that work fine in Vite 7 (Rollup).
+This repo demonstrates a bug where neither Rollup nor rolldown can resolve wildcard exports patterns from the @o7/icon package.
 
 ## Error
 
+### Vite 7 (Rollup)
+```
+[commonjs--resolver] No known conditions for "./lucide/check.svelte" specifier 
+in "@o7/icon" package
+```
+
+### Vite 8 (rolldown)
 ```
 Error: Could not resolve '@o7/icon/lucide/check' in src/App.svelte
    ╭─[ src/App.svelte:4:23 ]
@@ -27,21 +36,21 @@ The `@o7/icon` package uses wildcard exports in its `package.json`:
       "svelte": "./dist/lucide/index.js"
     },
     "./lucide/*": {
-      "types": "./dist/lucide/*.d.ts",
+      "types": "./dist/lucide/*.svelte.d.ts",
       "svelte": "./dist/lucide/*.svelte"
     }
   }
 }
 ```
 
-This pattern works in:
-- ✅ Vite 7 (Rollup) - dev and build both work
-- ✅ Vite 8 (rolldown) - **dev mode works** (plugin transforms imports correctly)
-- ❌ Vite 8 (rolldown) - **build fails** with "Package subpath is not defined by exports"
+This pattern **fails in both bundlers**:
+- ❌ Vite 7 (Rollup) - build fails
+- ❌ Vite 8 (rolldown) - build fails
 
 ## Expected Behavior
 
-Rolldown should resolve wildcard exports (`"./lucide/*": "*.svelte"`) just like Rollup does.
+Wildcard exports should resolve:
+- `@o7/icon/lucide/*` → `./dist/lucide/*.svelte`
 
 ## Reproduction Steps
 
@@ -52,12 +61,17 @@ pnpm build
 
 ## Workaround
 
-Currently requires either:
-1. Stay on Vite 7 (Rollup)
-2. Use explicit imports: `@o7/icon/lucide/Check.svelte` (requires updating all imports)
-3. Wait for rolldown fix
+Use explicit paths without wildcard pattern:
+
+```js
+// This works but defeats the purpose of exports wildcards
+import CheckIcon from '@o7/icon/dist/lucide/check.svelte';
+```
+
+Or the @o7/icon Vite plugin transforms barrel imports in dev mode, but production builds still fail.
 
 ## Related
 
 - @o7/icon: https://github.com/ottomated/o7-icon
 - Rolldown: https://github.com/rolldown/rolldown
+- Rollup: https://github.com/rollup/rollup
