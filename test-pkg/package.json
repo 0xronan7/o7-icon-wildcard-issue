@@ -1,0 +1,10 @@
+{
+  "name": "test-wildcard-exports",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    "./*": {
+      "import": "./dist/*.js"
+    }
+  }
+}
