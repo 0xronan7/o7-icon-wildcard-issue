@@ -1,29 +1,18 @@
 # @o7/icon Wildcard Export Resolution Bug
 
-**Affects:** Both Vite 7 (Rollup) AND Vite 8 (rolldown) - **production stable**
+**Affects:** Vite 8 (rolldown) - production stable
 
 ## Reproduction
 
-This repo demonstrates a bug where the @o7/icon package's wildcard exports pattern fails to resolve in modern bundlers.
+This repo demonstrates a bug where the @o7/icon package's wildcard exports pattern fails to resolve in Vite 8.
 
 ## Error
 
-### Vite 7 (Rollup)
 ```
-✘ [ERROR] No known conditions for "./lucide/check.svelte" specifier in "@o7/icon" package
+"./lucide/check" is not exported under the conditions ["module", "browser", "production", "import"]
+from package @o7/icon (see exports field in package.json)
 ```
-- ❌ Dev mode: fails
-- ❌ Build: fails
 
-### Vite 8 (rolldown)
-```
-Error: Could not resolve '@o7/icon/lucide/check' in src/App.svelte
-   ╭─[ src/App.svelte:4:23 ]
-   │
- 4 │ import CheckIcon from '@o7/icon/lucide/check';
-   │                       ───────────┬───────────  
-   │                                  ╰───────────── Package subpath is not defined by exports
-```
 - ❌ Dev mode: fails
 - ❌ Build: fails
 
@@ -46,11 +35,7 @@ The `@o7/icon` package uses wildcard exports in its `package.json`:
 }
 ```
 
-This pattern **fails in both bundlers, in both dev and build modes**:
-- ❌ Vite 7 (Rollup) - dev & build fail
-- ❌ Vite 8 (rolldown) - dev & build fail
-
-The `@o7/icon` Vite plugin (`o7Icon()`) attempts to rewrite imports at build time, but it doesn't fix the underlying exports resolution issue.
+This wildcard pattern fails in Vite 8 (rolldown) in both dev and build modes.
 
 ## Expected Behavior
 
@@ -61,7 +46,8 @@ Wildcard exports should resolve:
 
 ```bash
 pnpm install
-pnpm build
+pnpm build  # FAILS
+pnpm dev    # FAILS
 ```
 
 ## Workaround
@@ -69,7 +55,6 @@ pnpm build
 Use explicit paths without wildcard pattern:
 
 ```js
-// This works but defeats the purpose of exports wildcards
 import CheckIcon from '@o7/icon/dist/lucide/check.svelte';
 ```
 
@@ -77,5 +62,3 @@ import CheckIcon from '@o7/icon/dist/lucide/check.svelte';
 
 - @o7/icon: https://github.com/ottomated/o7-icon
 - Vite: https://github.com/vitejs/vite
-- Rollup: https://github.com/rollup/rollup
-- Rolldown: https://github.com/rolldown/rolldown
