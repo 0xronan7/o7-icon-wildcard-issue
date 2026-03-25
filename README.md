@@ -1,10 +1,10 @@
-# Rolldown Wildcard Export Resolution Bug
+# @o7/icon Wildcard Export Resolution Bug
 
-**UPDATE:** This bug affects **both Vite 7 (Rollup) AND Vite 8 (rolldown)**.
+**Affects:** Both Vite 7 (Rollup) AND Vite 8 (rolldown)
 
 ## Reproduction
 
-This repo demonstrates a bug where neither Rollup nor rolldown can resolve wildcard exports patterns from the @o7/icon package.
+This repo demonstrates a bug where the @o7/icon package's wildcard exports pattern fails to resolve in modern bundlers.
 
 ## Error
 
@@ -73,10 +73,9 @@ Use explicit paths without wildcard pattern:
 import CheckIcon from '@o7/icon/dist/lucide/check.svelte';
 ```
 
-Or the @o7/icon Vite plugin transforms barrel imports in dev mode, but production builds still fail.
-
 ## Related
 
 - @o7/icon: https://github.com/ottomated/o7-icon
-- Rolldown: https://github.com/rolldown/rolldown
+- Vite: https://github.com/vitejs/vite
 - Rollup: https://github.com/rollup/rollup
+- Rolldown: https://github.com/rolldown/rolldown
