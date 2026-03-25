@@ -1,30 +1,47 @@
-# Rolldown Wildcard Exports Issue Reproduction
+# Rolldown Wildcard Export Resolution Bug
 
-This repo reproduces a bug where rolldown cannot resolve wildcard exports patterns in package.json.
+## Reproduction
+
+This repo demonstrates a bug where rolldown (Vite 8's bundler) cannot resolve wildcard exports patterns that work fine in Vite 7 (Rollup).
 
 ## Error
 
 ```
 Error: Could not resolve '@o7/icon/lucide/check' in src/App.svelte
-Package subpath is not defined by exports
+   ╭─[ src/App.svelte:4:23 ]
+   │
+ 4 │ import CheckIcon from '@o7/icon/lucide/check';
+   │                       ───────────┬───────────  
+   │                                  ╰───────────── Package subpath is not defined by exports
 ```
 
 ## Root Cause
 
-The `@o7/icon` package uses wildcard exports in its package.json:
+The `@o7/icon` package uses wildcard exports in its `package.json`:
 
 ```json
 {
   "exports": {
-    "./lucide/*": "./dist/lucide/*.svelte"
+    "./lucide": {
+      "types": "./dist/lucide/index.d.ts",
+      "svelte": "./dist/lucide/index.js"
+    },
+    "./lucide/*": {
+      "types": "./dist/lucide/*.d.ts",
+      "svelte": "./dist/lucide/*.svelte"
+    }
   }
 }
 ```
 
-This works fine with:
-- ✅ Vite 7 + Rollup (dev and build)
-- ✅ Vite 8 + Rolldown (dev mode only)
-- ❌ Vite 8 + Rolldown (production build)
+This pattern works in:
+- ✅ Vite 7 (Rollup) - dev and build both work
+- ✅ Vite 8 (rolldown) - **dev mode works** (plugin transforms imports correctly)
+- ❌ Vite 8 (rolldown) - **build fails** with "Package subpath is not defined by exports"
+
+## Expected Behavior
+
+Rolldown should resolve wildcard exports (`"./lucide/*": "*.svelte"`) just like Rollup does.
 
 ## Reproduction Steps
 
@@ -33,21 +50,14 @@ pnpm install
 pnpm build
 ```
 
-## Expected Behavior
+## Workaround
 
-The build should succeed and resolve `@o7/icon/lucide/check` to `./dist/lucide/check.svelte` based on the wildcard export pattern.
-
-## Actual Behavior
-
-Rolldown fails to resolve the subpath import, throwing "Package subpath is not defined by exports".
-
-## Environment
-
-- Vite: 8.0.2
-- Rolldown: 1.0.0-rc.11
-- Node: v24.14.0
-- Package: @o7/icon 0.3.79
+Currently requires either:
+1. Stay on Vite 7 (Rollup)
+2. Use explicit imports: `@o7/icon/lucide/Check.svelte` (requires updating all imports)
+3. Wait for rolldown fix
 
 ## Related
 
-This appears to be a rolldown limitation with wildcard export patterns, not an issue with the @o7/icon plugin (which correctly transforms imports in dev mode).
+- @o7/icon: https://github.com/ottomated/o7-icon
+- Rolldown: https://github.com/rolldown/rolldown
